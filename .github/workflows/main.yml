@@ -1,0 +1,36 @@
+name: 🚀 Deploy Nest Backend with CI/CD
+run-name: ${{ github.actor }} Linting and Building on ${{ github.ref }}
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.8.1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'pnpm'
+
+      - name: 📚 Install dependencies
+        run: pnpm install
+
+      - name: ✅ Run lint
+        run: pnpm lint
+
+      - name: 🏗️ Build application
+        run: pnpm build
