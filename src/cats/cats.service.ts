@@ -1,43 +1,43 @@
 import { Injectable } from '@nestjs/common';
-import {
-  CatResponseDto,
-  CreateCatDto,
-  GetCatKillsResponseDto,
-  GetCatsResponseDto,
-} from './dto/catAPI.dto';
+import { PrismaService } from 'src/prisma.service';
 import { NotFoundException } from './not-found.exception';
+import { CatAPIResponse, CatKillsAPIResponse, CreateCatsDto } from './types';
 
 @Injectable()
 export class CatsService {
-  private readonly cats: CatResponseDto[] = [];
+  constructor(private prisma: PrismaService) {}
 
-  createCat(catCreate: CreateCatDto): { status: number; message: string } {
-    const newCat: CatResponseDto = {
-      id: this.cats.length + 1,
-      ...catCreate,
-    };
-    this.cats.push(newCat);
-    return { status: 201, message: 'Cat Created' };
+  async createCat(catCreate: CreateCatsDto): Promise<CatAPIResponse> {
+    const catCreated = await this.prisma.cats.create({
+      data: catCreate,
+    });
+
+    return catCreated;
   }
 
-  getCats(): GetCatsResponseDto {
-    return { status: 200, message: 'Cats Found', data: this.cats };
+  async getCats(): Promise<CatAPIResponse[]> {
+    const cats = await this.prisma.cats.findMany();
+    return cats;
   }
 
-  getCatById(catId: string): {
-    status: number;
-    message: string;
-    data: CatResponseDto | null;
-  } {
-    const cat = this.cats.find((cat) => cat.id === Number(catId));
+  async getCatById(catId: string): Promise<CatAPIResponse> {
+    const cat = await this.prisma.cats.findFirst({
+      where: {
+        id: Number(catId),
+      },
+    });
     if (!cat) {
       throw new NotFoundException('Cat Not Found');
     }
-    return { status: 200, message: 'Cat Found', data: cat };
+    return cat;
   }
 
-  getCatKillsByName(name: string): GetCatKillsResponseDto {
-    const cat = this.cats.find((cat) => cat.name === name);
+  async getCatKillsByName(name: string): Promise<CatKillsAPIResponse> {
+    const cat = await this.prisma.cats.findFirst({
+      where: {
+        name,
+      },
+    });
     if (!cat) {
       throw new NotFoundException('Cat Not Found');
     }

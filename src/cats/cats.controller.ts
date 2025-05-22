@@ -1,65 +1,38 @@
-import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Body, Controller, Get, Param, Post, Query, UseGuards } from '@nestjs/common';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { AuthGuard, Roles, RolesGuard } from 'src/guard';
+import { Role } from 'src/users/types';
 import { CatsService } from './cats.service';
-import {
-  CatResponseDto,
-  CreateCatDto,
-  GetCatKillsResponseDto,
-  GetCatsResponseDto,
-} from './dto/catAPI.dto';
+import { CatAPIResponse, CatKillsAPIResponse, CreateCatsDto } from './types';
 
 @ApiTags('Cats')
 @Controller('cats')
 export class CatsController {
   constructor(private readonly catService: CatsService) {}
 
+  @UseGuards(AuthGuard, RolesGuard)
   @Post()
+  @Roles(Role.Admin)
   @ApiOperation({ summary: 'Create a new cat' })
-  @ApiResponse({ status: 201, description: 'Cat created successfully' })
-  @ApiResponse({ status: 400, description: 'Invalid input' })
-  createCat(@Body() catCreate: CreateCatDto): {
-    status: number;
-    message: string;
-  } {
+  createCat(@Body() catCreate: CreateCatsDto): Promise<CatAPIResponse> {
     return this.catService.createCat(catCreate);
   }
 
   @Get()
   @ApiOperation({ summary: 'Get all cats' })
-  @ApiResponse({
-    status: 200,
-    description: 'List of cats returned successfully',
-    type: GetCatsResponseDto,
-  })
-  getCats(): GetCatsResponseDto {
+  getCats(): Promise<CatAPIResponse[]> {
     return this.catService.getCats();
   }
 
   @Get('kills')
   @ApiOperation({ summary: 'Get kill count of a cat by name' })
-  @ApiResponse({
-    status: 200,
-    description: 'Kill count retrieved',
-    type: GetCatKillsResponseDto,
-  })
-  @ApiResponse({ status: 404, description: 'Cat not found' })
-  getCatKills(@Query('name') name: string): GetCatKillsResponseDto {
+  getCatKills(@Query('name') name: string): Promise<CatKillsAPIResponse> {
     return this.catService.getCatKillsByName(name);
   }
 
   @Get(':id')
   @ApiOperation({ summary: 'Get a cat by ID' })
-  @ApiResponse({
-    status: 200,
-    description: 'Cat found',
-    type: CatResponseDto,
-  })
-  @ApiResponse({ status: 404, description: 'Cat not found' })
-  getCat(@Param('id') id: string): {
-    status: number;
-    message: string;
-    data: CatResponseDto | null;
-  } {
+  getCat(@Param('id') id: string): Promise<CatAPIResponse> {
     return this.catService.getCatById(id);
   }
 }
