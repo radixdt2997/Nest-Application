@@ -4,21 +4,21 @@ import { Role } from '../common.types';
 export class SignupUserDTO {
   @IsOptional()
   @IsString()
-  firstName: string;
+  firstName?: string;
 
   @IsOptional()
   @IsString()
-  lastName: string;
+  lastName?: string;
 
   @IsNotEmpty()
   @IsString()
-  email: string;
+  email!: string;
 
   @IsNotEmpty()
   @IsString()
-  password: string;
+  password!: string;
 
   @IsEnum(Role)
   @IsOptional()
-  role: Role;
+  role?: Role;
 }

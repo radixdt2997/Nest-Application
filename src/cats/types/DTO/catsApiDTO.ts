@@ -5,10 +5,10 @@ export class CreateCatsDto {
   @ApiProperty({ example: 'Tiger', description: 'The name of the cat' })
   @IsString()
   @IsNotEmpty()
-  name: string;
+  name!: string;
 
   @ApiProperty({ example: 3, description: 'Number of kills' })
   @IsNumber()
   @IsNotEmpty()
-  kills: number;
+  kills!: number;
 }
